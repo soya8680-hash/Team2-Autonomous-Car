@@ -43,6 +43,9 @@ class Hardware:
         self.bot = Raspbot()
         self.dev, self.addr = self.bot._device, self.bot._addr
         self.use_ultrasonic = use_ultrasonic
+        # 카메라 각도 — specs/4-욜로.md (드라이버 함수: 서보는 정지 안전과 무관)
+        self.bot.Ctrl_Servo(1, 90)
+        self.bot.Ctrl_Servo(2, 27)
         if use_ultrasonic:
             self.dev.write_i2c_block_data(self.addr, 0x07, [1])
             time.sleep(1)
