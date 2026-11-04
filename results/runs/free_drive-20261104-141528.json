@@ -1,0 +1,20 @@
+{
+  "program": "free_drive",
+  "dry": false,
+  "speed": 40,
+  "seconds": 15,
+  "person_stop_height": 300,
+  "video": "results/videos/free_drive-20261104-141528.mp4",
+  "max_person_height": 436,
+  "reason": "PERSON_CLOSE",
+  "stop_person_height": 436,
+  "stop_errors": [],
+  "elapsed_seconds": 2.921,
+  "stop_errors_final": [],
+  "vision_error": null,
+  "video_check": {
+    "frames": 61,
+    "fps": 15.0,
+    "seconds": 4.07
+  }
+}

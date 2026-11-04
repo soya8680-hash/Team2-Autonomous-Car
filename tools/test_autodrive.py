@@ -382,6 +382,97 @@ class FreeDrive(unittest.TestCase):
         self.assertEqual(bot.wheels[-1], STOP)
 
 
+class GuardedTeleop(unittest.TestCase):
+    PERSON = [('person', 0.9, (0, 0, 100, 400))]
+
+    @classmethod
+    def setUpClass(cls):
+        cls.gt = load('guarded_teleop', 'guarded_teleop.py')
+
+    def setUp(self):
+        self.bot = FakeBot()
+        self.c = self.gt.Controller(self.bot)
+        self.seq = 0
+
+    def see(self, now, detections=(), det_t=None):
+        self.seq += 1
+        t = now if det_t is None else det_t
+        self.c.update(self.seq, list(detections), t, t, now)
+
+    def test_moves_and_auto_stop(self):
+        self.see(1.0)
+        self.c.key('w', 1.0)
+        self.assertEqual(self.bot.wheels[-1], (60,) * 4)
+        self.see(1.5)
+        self.assertEqual(self.c.moving, 'w')
+        self.see(1.7)
+        self.assertEqual(self.bot.wheels[-1], STOP)
+
+    def test_close_person_stops_and_blocks_all_moves(self):
+        self.c.key('w', 1.0)
+        self.see(1.0, self.PERSON)
+        self.assertEqual(self.bot.wheels[-1], (60,) * 4)  # 한 번은 잘못 본 것일 수 있다
+        self.see(1.1, self.PERSON)
+        self.assertTrue(self.c.locked)
+        self.assertEqual(self.bot.wheels[-1], STOP)
+        self.assertEqual(self.bot.beeps, [True])
+        count = len(self.bot.wheels)
+        for key in self.gt.MOVES:
+            self.c.key(key, 1.2)
+        self.assertEqual(len(self.bot.wheels), count)
+
+    def test_unlock_after_one_clear_second_without_moving(self):
+        self.see(1.0, self.PERSON)
+        self.see(1.1, self.PERSON)
+        self.see(1.2)
+        self.see(2.1)
+        self.assertTrue(self.c.locked)
+        self.see(2.2)
+        self.assertFalse(self.c.locked)
+        self.assertEqual(self.c.moving, None)
+        self.assertTrue(all(w == STOP for w in self.bot.wheels))
+        self.c.key('s', 2.3)
+        self.assertEqual(self.bot.wheels[-1], (-60,) * 4)
+
+    def test_reappearing_person_restarts_clear_time(self):
+        self.see(1.0, self.PERSON)
+        self.see(1.1, self.PERSON)
+        self.see(1.5)
+        self.see(1.9, self.PERSON)
+        self.see(2.0, self.PERSON)
+        self.see(2.6)
+        self.assertTrue(self.c.locked)
+
+    def test_far_person_does_not_lock(self):
+        far = [('person', 0.9, (0, 0, 100, 349))]
+        self.see(1.0, far)
+        self.see(1.1, far)
+        self.assertFalse(self.c.locked)
+
+    def test_camera_freeze_locks(self):
+        self.c.key('w', 1.0)
+        self.see(2.1, det_t=1.0)
+        self.assertTrue(self.c.locked)
+        self.assertEqual(self.c.lock_reason, 'CAMERA_FAULT')
+        self.assertEqual(self.bot.wheels[-1], STOP)
+
+    def test_beep_turns_off(self):
+        self.see(1.0, self.PERSON)
+        self.see(1.1, self.PERSON)
+        self.see(1.7, self.PERSON)
+        self.assertEqual(self.bot.beeps, [True, False])
+
+    def test_speed_limits_and_quit(self):
+        for _ in range(10):
+            self.c.key('+', 1.0)
+        self.assertEqual(self.c.speed, 100)
+        self.assertLessEqual(self.c.speed, core.MAX_WHEEL_SPEED)
+        for _ in range(10):
+            self.c.key('-', 1.0)
+        self.assertEqual(self.c.speed, 40)
+        self.assertFalse(self.c.key('x', 1.0))
+
+
 class Records(unittest.TestCase):
     def test_runs_csv_header_once(self):
         with tempfile.TemporaryDirectory() as folder:
