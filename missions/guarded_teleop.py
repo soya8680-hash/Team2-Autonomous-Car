@@ -134,12 +134,13 @@ def screen_loop(screen, ctrl, vision):
             return
 
 
-def session(hw, dry):
+def session(hw, dry, body=None, name='guarded_teleop'):
+    """장치 준비 · 조종 · 정리. body(ctrl, vision) 가 조종 방식이다 (기본은 키보드 화면)."""
     stamp = datetime.now(ZoneInfo('Asia/Seoul')).strftime('%Y%m%d-%H%M%S')
     prefix = 'dry-' if dry else ''
-    video = ROOT / 'results' / 'videos' / f'{prefix}guarded_teleop-{stamp}.mp4'
+    video = ROOT / 'results' / 'videos' / f'{prefix}{name}-{stamp}.mp4'
     video.parent.mkdir(parents=True, exist_ok=True)
-    report = {'program': 'guarded_teleop', 'dry': dry, 'person_stop_height': CFG.person_close_height,
+    report = {'program': name, 'dry': dry, 'person_stop_height': CFG.person_close_height,
               'video': str(video.relative_to(ROOT))}
     vision = Vision(video, True)
     ctrl = Controller(hw)
@@ -152,7 +153,10 @@ def session(hw, dry):
         if errors:
             raise OSError('시작 전 정지 통신 실패: ' + '; '.join(errors))
         hw.light(GREEN)
-        curses.wrapper(screen_loop, ctrl, vision)
+        if body is None:
+            curses.wrapper(screen_loop, ctrl, vision)
+        else:
+            body(ctrl, vision)
         report['reason'] = 'QUIT'
     except BaseException as exc:
         report['reason'] = 'INTERRUPTED' if isinstance(exc, KeyboardInterrupt) else 'ERROR'
@@ -169,7 +173,7 @@ def session(hw, dry):
             report['video_check'] = check_video(video)
         folder = ROOT / 'results' / 'runs'
         folder.mkdir(parents=True, exist_ok=True)
-        path = folder / f'{prefix}guarded_teleop-{stamp}.json'
+        path = folder / f'{prefix}{name}-{stamp}.json'
         path.write_text(json.dumps(report, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
         print('\n끝난 이유:', report.get('reason'))
         print('자동 잠금 횟수:', sum('lock' in e for e in ctrl.events))
@@ -193,6 +197,11 @@ def main():
     if args.dry:
         session(DryHardware(), dry=True)
         return
+    run_on_robot()
+
+
+def run_on_robot(body=None, name='guarded_teleop'):
+    """준비 확인을 받고 실제 장치로 실행한다. 터미널이 끊겨도 바퀴를 멈춘다."""
     print('앞쪽 사람만 보고 멈춥니다. 옆과 뒤의 사람, 벽, 의자에는 멈추지 않습니다.')
     if input('라즈봇을 바닥에 내려놓고 사방 1m를 비웠나요? 준비됐다면 "확인" 입력: ').strip() != '확인':
         print('취소 — 바퀴 명령 없음')
@@ -207,7 +216,7 @@ def main():
         # SSH 가 끊기면 SIGHUP 이 온다: 바퀴를 멈추고 끝낸다
         signal.signal(signal.SIGTERM, interrupt)
         signal.signal(signal.SIGHUP, interrupt)
-        session(Hardware(use_ultrasonic=False), dry=False)
+        session(Hardware(use_ultrasonic=False), dry=False, body=body, name=name)
     finally:
         termios.tcsetattr(sys.stdin, termios.TCSADRAIN, terminal)
         signal.signal(signal.SIGTERM, old_handler)

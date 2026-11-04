@@ -473,6 +473,86 @@ class GuardedTeleop(unittest.TestCase):
         self.assertFalse(self.c.key('x', 1.0))
 
 
+class CmdDrive(unittest.TestCase):
+    PERSON = [('person', 0.9, (0, 0, 100, 400))]
+
+    @classmethod
+    def setUpClass(cls):
+        sys.path.insert(0, str(ROOT / 'missions'))
+        cls.cd = load('cmd_drive', 'cmd_drive.py')
+        cls.gt = sys.modules['guarded_teleop']
+
+    def play(self, letter='w', seconds=1.0, person_after=None, key=lambda: False, bot=None):
+        clock = Clock()
+        bot = bot or FakeBot()
+        ctrl = self.gt.Controller(bot)
+        start = clock()
+        outer = self
+
+        class V(FakeVision):
+            def latest(self):
+                seq, _, t, f = super().latest()
+                near = person_after is not None and clock() - start >= person_after
+                return seq, outer.PERSON if near else [], t, f
+
+        result = self.cd.run_move(ctrl, V(clock), letter, seconds, key, clock=clock, sleep=clock.sleep)
+        return result, bot, ctrl, clock() - start
+
+    def test_parse_moves_and_defaults(self):
+        self.assertEqual(self.cd.parse('w 2'), ('move', ('w', 2.0)))
+        self.assertEqual(self.cd.parse(' FORWARD '), ('move', ('w', 1.0)))
+        self.assertEqual(self.cd.parse('turnright 0.5'), ('move', ('e', 0.5)))
+        self.assertEqual(self.cd.parse('speed 80'), ('speed', 80))
+        self.assertEqual(self.cd.parse('quit')[0], 'quit')
+        self.assertEqual(self.cd.parse('')[0], 'empty')
+
+    def test_parse_refuses_bad_input(self):
+        for line in ('w 6', 'w 0', 'w -1', 'w nan', 'w inf', 'w abc', 'w 1 2', 'speed 150', 'speed 30',
+                     'speed x', 'jump', 'rm -rf /', 'stop now'):
+            self.assertEqual(self.cd.parse(line)[0], 'error', line)
+
+    def test_move_runs_for_time_then_zero(self):
+        result, bot, _, elapsed = self.play(seconds=1.0)
+        self.assertEqual(result, 'DONE')
+        self.assertAlmostEqual(elapsed, 1.25, delta=0.1)
+        self.assertEqual(bot.wheels[-1], STOP)
+        self.assertEqual({w for w in bot.wheels}, {(60,) * 4, STOP})
+
+    def test_person_already_close_never_moves(self):
+        result, bot, ctrl, _ = self.play(person_after=0)
+        self.assertEqual(result, 'PERSON_CLOSE')
+        self.assertTrue(all(w == STOP for w in bot.wheels))
+        self.assertEqual(bot.beeps, [True, False])
+
+    def test_person_during_move_stops_early(self):
+        result, bot, _, elapsed = self.play(seconds=5, person_after=1.0)
+        self.assertEqual(result, 'PERSON_CLOSE')
+        self.assertLess(elapsed, 2.0)
+        self.assertEqual(bot.wheels[-1], STOP)
+        self.assertEqual(bot.beeps, [True, False])
+
+    def test_key_stops(self):
+        presses = iter([False] * 3 + [True] * 100)
+        result, bot, _, _ = self.play(seconds=5, key=lambda: next(presses))
+        self.assertEqual(result, 'KEY_STOP')
+        self.assertEqual(bot.wheels[-1], STOP)
+
+    def test_error_during_move_stops(self):
+        class Broken(FakeBot):
+            def set_wheels(self, speeds):
+                raise OSError('가짜 I2C 오류')
+
+        bot = Broken()
+        with self.assertRaises(OSError):
+            self.play(bot=bot)
+        self.assertEqual(bot.wheels[-1], STOP)
+
+    def test_every_direction_within_speed_limit(self):
+        for letter in self.gt.MOVES:
+            _, bot, _, _ = self.play(letter=letter, seconds=0.2)
+            self.assertTrue(all(abs(s) <= core.MAX_WHEEL_SPEED for w in bot.wheels for s in w))
+
+
 class Records(unittest.TestCase):
     def test_runs_csv_header_once(self):
         with tempfile.TemporaryDirectory() as folder:

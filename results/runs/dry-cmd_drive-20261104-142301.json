@@ -1,0 +1,16 @@
+{
+  "program": "cmd_drive",
+  "dry": true,
+  "person_stop_height": 350,
+  "video": "results/videos/dry-cmd_drive-20261104-142301.mp4",
+  "reason": "QUIT",
+  "stop_errors": [],
+  "stop_errors_final": [],
+  "vision_error": null,
+  "events": [],
+  "video_check": {
+    "frames": 34,
+    "fps": 15.0,
+    "seconds": 2.27
+  }
+}
