@@ -204,6 +204,9 @@ class Vision:
         cap, writer = None, None
         try:
             cap = open_camera()
+            if not cap.isOpened():
+                raise RuntimeError('카메라를 열지 못했습니다. 다른 프로그램이 쓰고 있지 않은지 확인하세요 '
+                                   '(fuser -v /dev/video0). 없으면 USB 선을 확인하세요.')
             for _ in range(10):  # 켜자마자 몇 장은 어둡다
                 ok, frame = cap.read()
             if not ok:

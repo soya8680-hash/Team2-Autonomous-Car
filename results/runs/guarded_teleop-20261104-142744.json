@@ -1,0 +1,12 @@
+{
+  "program": "guarded_teleop",
+  "dry": false,
+  "person_stop_height": 350,
+  "video": "results/videos/guarded_teleop-20261104-142744.mp4",
+  "reason": "ERROR",
+  "error": "카메라/YOLO 준비 실패: 카메라를 읽지 못했습니다. USB 선을 확인하세요.",
+  "stop_errors": [],
+  "stop_errors_final": [],
+  "vision_error": "카메라를 읽지 못했습니다. USB 선을 확인하세요.",
+  "events": []
+}
