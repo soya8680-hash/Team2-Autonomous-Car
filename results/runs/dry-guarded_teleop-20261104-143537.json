@@ -1,0 +1,17 @@
+{
+  "program": "guarded_teleop",
+  "dry": true,
+  "person_stop_height": 350,
+  "video": "results/videos/dry-guarded_teleop-20261104-143537.mp4",
+  "reason": "INTERRUPTED",
+  "error": "KeyboardInterrupt",
+  "stop_errors": [],
+  "stop_errors_final": [],
+  "vision_error": null,
+  "events": [],
+  "video_check": {
+    "frames": 11,
+    "fps": 15.0,
+    "seconds": 0.73
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "program": "guarded_teleop",
+  "dry": true,
+  "person_stop_height": 350,
+  "video": "results/videos/dry-guarded_teleop-20261104-143407.mp4",
+  "reason": "QUIT",
+  "stop_errors": [],
+  "stop_errors_final": [],
+  "vision_error": null,
+  "events": [],
+  "video_check": {
+    "frames": 26,
+    "fps": 15.0,
+    "seconds": 1.73
+  }
+}

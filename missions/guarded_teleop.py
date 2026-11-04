@@ -19,7 +19,7 @@ from zoneinfo import ZoneInfo
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'tools'))
 from autodrive_core import Config, Perception, GREEN, RED
-from autodrive_runtime import Hardware, Vision, check_video
+from autodrive_runtime import Hardware, Vision, check_video, ignore_stop_signals
 
 ROOT = Path(__file__).resolve().parents[1]
 CFG = Config(use_obstacle=False, use_feature=False, person_close_height=350)
@@ -164,6 +164,7 @@ def session(hw, dry, body=None, name='guarded_teleop'):
         if not isinstance(exc, KeyboardInterrupt):
             raise
     finally:
+        ignore_stop_signals()
         report['stop_errors'] = hw.stop_all()
         report['stop_errors_final'] = hw.close()
         vision.stop()

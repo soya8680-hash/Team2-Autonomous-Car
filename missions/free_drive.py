@@ -21,7 +21,7 @@ from zoneinfo import ZoneInfo
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'tools'))
 from autodrive_core import Config, Perception, RED, GREEN, STOP
-from autodrive_runtime import Hardware, Vision, check_video
+from autodrive_runtime import Hardware, Vision, check_video, ignore_stop_signals
 
 ROOT = Path(__file__).resolve().parents[1]
 SPEED, SECONDS, CAMERA_FAULT_SECONDS = 40, 15, 1.0
@@ -120,6 +120,7 @@ def session(hw, key_pressed, dry):
         time.sleep(0.7)
         run(hw, vision, key_pressed, report)
     finally:
+        ignore_stop_signals()
         report['stop_errors_final'] = hw.close()
         vision.stop()
         report['vision_error'] = vision.error

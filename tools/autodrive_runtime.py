@@ -35,6 +35,12 @@ LOOP_SECONDS = 0.02
 ULTRASONIC_EVERY = 3
 
 
+def ignore_stop_signals():
+    """정리(바퀴 정지 · 기록 저장) 도중 Ctrl+C 등이 또 들어와도 끊기지 않게 한다."""
+    for name in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP, signal.SIGTSTP):
+        signal.signal(name, signal.SIG_IGN)
+
+
 class Hardware:
     """라즈봇 장치. 드라이버가 숨기는 I2C 오류도 예외로 받도록 버스를 직접 쓴다."""
 
@@ -406,6 +412,7 @@ def execute(cfg, program, hw, key_pressed, fake_detections=None):
             vision.sim_t0 = hw.t0 = time.monotonic()
         run(cfg, hw, vision, key_pressed, report)
     finally:
+        ignore_stop_signals()
         report['stop_errors_final'] = hw.close()
         vision.stop()
         report['vision_error'] = vision.error
