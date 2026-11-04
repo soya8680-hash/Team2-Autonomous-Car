@@ -311,6 +311,77 @@ class RunLoop(unittest.TestCase):
         self.assertEqual(bot.wheels[-1], STOP)
 
 
+class FreeDrive(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.fd = load('free_drive', 'free_drive.py')
+
+    def play(self, vision=None, key=lambda: False, bot=None):
+        clock = Clock()
+        bot = bot or FakeBot()
+        vision = vision(clock) if vision else FakeVision(clock)
+        report = {}
+        self.fd.run(bot, vision, key, report, clock=clock, sleep=clock.sleep)
+        return bot, report
+
+    def test_ends_at_15_seconds_and_stops(self):
+        bot, report = self.play()
+        self.assertEqual(report['reason'], 'TIME_LIMIT')
+        self.assertAlmostEqual(report['elapsed_seconds'], 15, delta=0.1)
+        self.assertEqual(bot.wheels[-1], STOP)
+        self.assertEqual({w for w in bot.wheels}, {(40,) * 4, STOP})
+
+    def test_close_person_stops_and_never_moves_again(self):
+        class Person(FakeVision):
+            def latest(self):
+                seq, _, t, f = super().latest()
+                near = seq > 100
+                return seq, [('person', 0.9, (0, 0, 100, 350))] if near else [], t, f
+
+        bot, report = self.play(vision=Person)
+        self.assertEqual(report['reason'], 'PERSON_CLOSE')
+        self.assertEqual(report['stop_person_height'], 350)
+        self.assertLess(report['elapsed_seconds'], 3.5)
+        self.assertEqual(bot.wheels[-1], STOP)
+        self.assertEqual(bot.wheels[-2], STOP)
+        self.assertEqual(bot.beeps, [True, False])
+
+    def test_far_person_keeps_going(self):
+        class Far(FakeVision):
+            def latest(self):
+                seq, _, t, f = super().latest()
+                return seq, [('person', 0.9, (0, 0, 100, 299))], t, f
+
+        _, report = self.play(vision=Far)
+        self.assertEqual(report['reason'], 'TIME_LIMIT')
+
+    def test_camera_freeze_stops(self):
+        class Frozen(FakeVision):
+            def latest(self):
+                self.frozen = self.seq >= 50
+                return super().latest()
+
+        bot, report = self.play(vision=Frozen)
+        self.assertEqual(report['reason'], 'CAMERA_FAULT')
+        self.assertEqual(bot.wheels[-1], STOP)
+
+    def test_key_first_never_moves(self):
+        bot, report = self.play(key=lambda: True)
+        self.assertEqual(report['reason'], 'KEY_STOP')
+        self.assertTrue(all(w == STOP for w in bot.wheels))
+
+    def test_error_still_stops(self):
+        class Broken(FakeBot):
+            def set_wheels(self, speeds):
+                super().set_wheels(speeds)
+                raise OSError('가짜 I2C 오류')
+
+        bot = Broken()
+        with self.assertRaises(OSError):
+            self.play(bot=bot)
+        self.assertEqual(bot.wheels[-1], STOP)
+
+
 class Records(unittest.TestCase):
     def test_runs_csv_header_once(self):
         with tempfile.TemporaryDirectory() as folder:

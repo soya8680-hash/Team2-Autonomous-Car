@@ -1,0 +1,19 @@
+{
+  "program": "free_drive",
+  "dry": true,
+  "speed": 40,
+  "seconds": 15,
+  "person_stop_height": 300,
+  "video": "results/videos/dry-free_drive-20261104-141338.mp4",
+  "max_person_height": 0,
+  "reason": "TIME_LIMIT",
+  "stop_errors": [],
+  "elapsed_seconds": 15.017,
+  "stop_errors_final": [],
+  "vision_error": null,
+  "video_check": {
+    "frames": 243,
+    "fps": 15.0,
+    "seconds": 16.2
+  }
+}
