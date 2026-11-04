@@ -1,0 +1,21 @@
+{
+  "team": "2조",
+  "mode": "hardware",
+  "samples": [
+    {
+      "elapsed": 0.0025,
+      "raw": 15,
+      "state": "LOST_LINE",
+      "speeds": [
+        0,
+        0,
+        0,
+        0
+      ]
+    }
+  ],
+  "reason": "LOST_LINE",
+  "stop_errors": [],
+  "elapsed_seconds": 0.004522329999872454,
+  "final_stop_errors": []
+}

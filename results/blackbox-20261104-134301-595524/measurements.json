@@ -1,0 +1,458 @@
+[
+  {
+    "elapsed_seconds": 0.0549,
+    "time": "2026-11-04T13:43:04.015+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 0.1869,
+    "time": "2026-11-04T13:43:04.147+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 0.3189,
+    "time": "2026-11-04T13:43:04.279+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 0.4549,
+    "time": "2026-11-04T13:43:04.415+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 0.5868,
+    "time": "2026-11-04T13:43:04.547+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 0.7189,
+    "time": "2026-11-04T13:43:04.679+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 0.8549,
+    "time": "2026-11-04T13:43:04.815+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 0.9869,
+    "time": "2026-11-04T13:43:04.947+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 1.1189,
+    "time": "2026-11-04T13:43:05.079+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 1.255,
+    "time": "2026-11-04T13:43:05.215+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 1.3871,
+    "time": "2026-11-04T13:43:05.347+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 1.519,
+    "time": "2026-11-04T13:43:05.479+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 1.655,
+    "time": "2026-11-04T13:43:05.615+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 1.7871,
+    "time": "2026-11-04T13:43:05.747+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 1.919,
+    "time": "2026-11-04T13:43:05.879+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 2.055,
+    "time": "2026-11-04T13:43:06.015+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 2.187,
+    "time": "2026-11-04T13:43:06.147+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 2.319,
+    "time": "2026-11-04T13:43:06.279+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 2.455,
+    "time": "2026-11-04T13:43:06.415+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 2.5871,
+    "time": "2026-11-04T13:43:06.547+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 2.719,
+    "time": "2026-11-04T13:43:06.679+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 2.855,
+    "time": "2026-11-04T13:43:06.815+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 2.987,
+    "time": "2026-11-04T13:43:06.947+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 3.1191,
+    "time": "2026-11-04T13:43:07.079+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 3.2551,
+    "time": "2026-11-04T13:43:07.215+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 3.387,
+    "time": "2026-11-04T13:43:07.348+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 3.5191,
+    "time": "2026-11-04T13:43:07.479+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 3.655,
+    "time": "2026-11-04T13:43:07.615+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 3.7871,
+    "time": "2026-11-04T13:43:07.747+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 3.919,
+    "time": "2026-11-04T13:43:07.879+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 4.055,
+    "time": "2026-11-04T13:43:08.015+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 4.187,
+    "time": "2026-11-04T13:43:08.147+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 4.3191,
+    "time": "2026-11-04T13:43:08.279+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 4.455,
+    "time": "2026-11-04T13:43:08.415+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 4.5871,
+    "time": "2026-11-04T13:43:08.547+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 4.7191,
+    "time": "2026-11-04T13:43:08.679+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 4.8551,
+    "time": "2026-11-04T13:43:08.816+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 4.987,
+    "time": "2026-11-04T13:43:08.947+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 5.1191,
+    "time": "2026-11-04T13:43:09.079+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 5.2551,
+    "time": "2026-11-04T13:43:09.215+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 5.3871,
+    "time": "2026-11-04T13:43:09.347+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 5.5191,
+    "time": "2026-11-04T13:43:09.479+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 5.6552,
+    "time": "2026-11-04T13:43:09.615+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 5.7871,
+    "time": "2026-11-04T13:43:09.747+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 5.9191,
+    "time": "2026-11-04T13:43:09.879+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 6.0551,
+    "time": "2026-11-04T13:43:10.015+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 6.1871,
+    "time": "2026-11-04T13:43:10.147+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 6.3192,
+    "time": "2026-11-04T13:43:10.279+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 6.4552,
+    "time": "2026-11-04T13:43:10.415+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 6.5871,
+    "time": "2026-11-04T13:43:10.547+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 6.7191,
+    "time": "2026-11-04T13:43:10.679+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 6.8555,
+    "time": "2026-11-04T13:43:10.816+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 6.9871,
+    "time": "2026-11-04T13:43:10.947+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 7.1192,
+    "time": "2026-11-04T13:43:11.079+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 7.2552,
+    "time": "2026-11-04T13:43:11.215+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 7.3872,
+    "time": "2026-11-04T13:43:11.347+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 7.5192,
+    "time": "2026-11-04T13:43:11.479+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 7.6552,
+    "time": "2026-11-04T13:43:11.615+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 7.7872,
+    "time": "2026-11-04T13:43:11.747+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 7.9192,
+    "time": "2026-11-04T13:43:11.879+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 8.0552,
+    "time": "2026-11-04T13:43:12.015+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 8.1872,
+    "time": "2026-11-04T13:43:12.147+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 8.3192,
+    "time": "2026-11-04T13:43:12.279+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 8.4552,
+    "time": "2026-11-04T13:43:12.415+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 8.5874,
+    "time": "2026-11-04T13:43:12.548+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 8.7192,
+    "time": "2026-11-04T13:43:12.679+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 8.8552,
+    "time": "2026-11-04T13:43:12.815+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 8.9872,
+    "time": "2026-11-04T13:43:12.947+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 9.1192,
+    "time": "2026-11-04T13:43:13.079+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 9.2553,
+    "time": "2026-11-04T13:43:13.216+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 9.3872,
+    "time": "2026-11-04T13:43:13.347+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 9.5193,
+    "time": "2026-11-04T13:43:13.480+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 9.6553,
+    "time": "2026-11-04T13:43:13.616+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 9.7872,
+    "time": "2026-11-04T13:43:13.747+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 9.9193,
+    "time": "2026-11-04T13:43:13.880+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  },
+  {
+    "elapsed_seconds": 10.0553,
+    "time": "2026-11-04T13:43:14.015+09:00",
+    "distance_cm": 0.0,
+    "sensor_error": null
+  }
+]

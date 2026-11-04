@@ -1,0 +1,14 @@
+{
+  "py_install.zip": {
+    "bytes": 40248,
+    "sha256": "7410a6933175ab92a20dcf16744f029a3eb1639dfaf6e99f301372be88caf9a6"
+  },
+  "py_install-incoming-2026-11-03.zip": {
+    "bytes": 40248,
+    "sha256": "7410a6933175ab92a20dcf16744f029a3eb1639dfaf6e99f301372be88caf9a6"
+  },
+  "yahboom-examples-2026-11-03.zip": {
+    "bytes": 44351512,
+    "sha256": "0f49bbd62b5874edd588eeacd41c478299ec2a9c9e1fc172b7fd23b5d3a5a457"
+  }
+}

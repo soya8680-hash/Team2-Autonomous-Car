@@ -1,0 +1,13 @@
+User confirmed robot on floor and 1m clearance in every direction.
+-> 앞으로
+-> 뒤로
+-> 옆으로 왼쪽
+-> 옆으로 오른쪽
+-> 제자리 왼쪽 회전
+-> 제자리 오른쪽 회전
+[OK] 끝. 여섯 동작이 이름대로 움직였으면 정상입니다.
+     옆으로 갈 때 비스듬히 가는 건 바닥·바퀴 차이로 흔한 일입니다(메카넘휠 문서 참고).
+Final stop: all four stop commands succeeded
+Commands completed without I2C errors; actual six movements await user confirmation.
+
+2026-11-03T18:50:54+09:00: 사용자 바닥 배치 및 사방 1m 확보 확인 후 tools/drive_test.py 실행. 속도 80, 앞 → 뒤 → 옆왼쪽 → 옆오른쪽 → 제자리 왼쪽 회전 → 제자리 오른쪽 회전 각 0.8초. 종료 코드 0, I2C 오류 출력 없음, 전체 정지 명령 완료. 실제 동작은 사용자 확인 대기.

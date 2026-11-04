@@ -1,0 +1,12 @@
+Started: 2026-11-03T18:10:43.017297+09:00
+User confirmed all four wheels are off the ground. Speed=80, duration=1 second per wheel.
+M1 left front: start
+M1: stop
+M2 left rear: start
+M2: stop
+M3 right front: start
+M3: stop
+M4 right rear: start
+M4: stop
+Final stop: all four stop commands succeeded
+PASS: driver movement commands completed without I2C errors; physical rotation awaits user observation.

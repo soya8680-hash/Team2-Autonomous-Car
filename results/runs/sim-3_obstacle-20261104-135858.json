@@ -1,0 +1,66 @@
+{
+  "team": "2조",
+  "program": "3_obstacle",
+  "simulated": true,
+  "video": "results/videos/sim-3_obstacle-20261104-135858.mp4",
+  "config": {
+    "use_obstacle": true,
+    "use_yolo": false,
+    "use_feature": false,
+    "speed": 60,
+    "inner_speed": 30,
+    "slow_speed": 45,
+    "slow_inner_speed": 25,
+    "lost_line_seconds": 0.5,
+    "min_lap_seconds": 5.0,
+    "finish_reads": 3,
+    "time_limit_seconds": 180.0,
+    "obstacle_stop_cm": 15.0,
+    "obstacle_resume_cm": 20.0,
+    "slow_cm": 40.0,
+    "distance_fault_seconds": 1.0,
+    "min_score": 0.5,
+    "stop_sign_min_height": 40,
+    "person_close_height": 200,
+    "person_far_height": 80,
+    "confirm_count": 2,
+    "stop_sign_seconds": 3.0,
+    "stop_sign_ignore_seconds": 5.0,
+    "person_clear_seconds": 1.0,
+    "vision_fault_seconds": 2.0
+  },
+  "code_version": "no-git",
+  "reason": "FINISH_LINE",
+  "stop_errors": [],
+  "elapsed_seconds": 27.25,
+  "off_line_count": 1,
+  "transitions": [
+    {
+      "t": 6.098,
+      "from": "FOLLOW",
+      "to": "WAIT_OBSTACLE",
+      "reason": "distance 10.0cm"
+    },
+    {
+      "t": 8.089,
+      "from": "WAIT_OBSTACLE",
+      "to": "FOLLOW",
+      "reason": "STRAIGHT"
+    },
+    {
+      "t": 27.05,
+      "from": "FOLLOW",
+      "to": "FINISHED",
+      "reason": "FINISH_LINE"
+    }
+  ],
+  "final_state": "FINISHED",
+  "max_loop_gap_ms": 20.4,
+  "stop_errors_final": [],
+  "vision_error": null,
+  "video_check": {
+    "frames": 425,
+    "fps": 15.0,
+    "seconds": 28.33
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "team": "2조",
+  "target_seconds": 10,
+  "fps": 20,
+  "status": "recorded",
+  "capture_seconds": 10.016848641000024,
+  "frames": 200,
+  "camera_samples": 75,
+  "resolution": [
+    640,
+    480
+  ],
+  "probe": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 640,
+        "height": 480,
+        "pix_fmt": "yuvj420p",
+        "nb_frames": "200"
+      }
+    ],
+    "format": {
+      "duration": "10.000000"
+    }
+  },
+  "decode_check": "passed",
+  "sensor_errors": 0,
+  "distance_min_cm": 1.7,
+  "distance_max_cm": 3.4
+}

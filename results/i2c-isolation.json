@@ -1,0 +1,5 @@
+{
+  "before": " 2: a3    pu | hi // GPIO2 = SDA1\n 3: a3    pu | lo // GPIO3 = SCL1\n",
+  "both_released": " 2: ip    pu | hi // GPIO2 = input\n 3: ip    pu | lo // GPIO3 = input\n",
+  "restored": " 2: a3    pu | hi // GPIO2 = SDA1\n 3: a3    pu | lo // GPIO3 = SCL1\n"
+}

@@ -1,0 +1,19 @@
+{
+  "date": "2026-11-04",
+  "devices": {
+    "/dev/i2c-1": true,
+    "/dev/video0": true
+  },
+  "ffmpeg": "/usr/bin/ffmpeg",
+  "ffprobe": "/usr/bin/ffprobe",
+  "opencv": "4.10.0",
+  "camera_read_ok": true,
+  "frame_shape": [
+    480,
+    640,
+    3
+  ],
+  "i2c_line_register": [
+    15
+  ]
+}

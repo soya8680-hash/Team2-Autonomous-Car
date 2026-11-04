@@ -1,0 +1,251 @@
+{
+  "opencv": "4.10.0",
+  "camera": {
+    "index": 0,
+    "path": "/home/pi/raspbot/results/camera_test.jpg",
+    "width": 640,
+    "height": 480,
+    "brightness_mean": 102.80279947916667
+  },
+  "board": {
+    "line_initial": [
+      15
+    ],
+    "buzzer_led_commands": "success; physical observation pending",
+    "buzzer_led_repeat": "two beeps and four colors for 2 seconds each; observation pending",
+    "buzzer_led_observation": "user confirmed two beeps and all four colors"
+  },
+  "ultrasonic": {
+    "samples": [
+      {
+        "seconds": 0.0,
+        "mm": 323
+      },
+      {
+        "seconds": 0.5,
+        "mm": 289
+      },
+      {
+        "seconds": 1.0,
+        "mm": 34
+      },
+      {
+        "seconds": 1.5,
+        "mm": 51
+      },
+      {
+        "seconds": 2.0,
+        "mm": 340
+      },
+      {
+        "seconds": 2.51,
+        "mm": 306
+      },
+      {
+        "seconds": 3.01,
+        "mm": 51
+      },
+      {
+        "seconds": 3.51,
+        "mm": 136
+      },
+      {
+        "seconds": 4.01,
+        "mm": 306
+      },
+      {
+        "seconds": 4.51,
+        "mm": 119
+      },
+      {
+        "seconds": 5.01,
+        "mm": 68
+      },
+      {
+        "seconds": 5.51,
+        "mm": 170
+      },
+      {
+        "seconds": 6.01,
+        "mm": 289
+      },
+      {
+        "seconds": 6.51,
+        "mm": 85
+      },
+      {
+        "seconds": 7.01,
+        "mm": 85
+      },
+      {
+        "seconds": 7.52,
+        "mm": 306
+      },
+      {
+        "seconds": 8.02,
+        "mm": 153
+      },
+      {
+        "seconds": 8.52,
+        "mm": 153
+      },
+      {
+        "seconds": 9.02,
+        "mm": 306
+      },
+      {
+        "seconds": 9.52,
+        "mm": 51
+      },
+      {
+        "seconds": 10.02,
+        "mm": 153
+      },
+      {
+        "seconds": 10.52,
+        "mm": 153
+      },
+      {
+        "seconds": 11.02,
+        "mm": 153
+      },
+      {
+        "seconds": 11.52,
+        "mm": 51
+      },
+      {
+        "seconds": 12.02,
+        "mm": 51
+      },
+      {
+        "seconds": 12.53,
+        "mm": 153
+      },
+      {
+        "seconds": 13.03,
+        "mm": 153
+      },
+      {
+        "seconds": 13.53,
+        "mm": 153
+      },
+      {
+        "seconds": 14.03,
+        "mm": 51
+      },
+      {
+        "seconds": 14.53,
+        "mm": 34
+      },
+      {
+        "seconds": 15.03,
+        "mm": 306
+      },
+      {
+        "seconds": 15.53,
+        "mm": 306
+      },
+      {
+        "seconds": 16.03,
+        "mm": 306
+      },
+      {
+        "seconds": 16.53,
+        "mm": 306
+      },
+      {
+        "seconds": 17.03,
+        "mm": 68
+      },
+      {
+        "seconds": 17.54,
+        "mm": 34
+      },
+      {
+        "seconds": 18.04,
+        "mm": 51
+      },
+      {
+        "seconds": 18.54,
+        "mm": 170
+      },
+      {
+        "seconds": 19.04,
+        "mm": 221
+      },
+      {
+        "seconds": 19.54,
+        "mm": 289
+      }
+    ],
+    "errors": [],
+    "min_mm": 34,
+    "max_mm": 340
+  },
+  "line_sensor": {
+    "samples": [
+      [
+        1,
+        1,
+        1,
+        1
+      ],
+      [
+        1,
+        1,
+        1,
+        1
+      ],
+      [
+        1,
+        1,
+        1,
+        1
+      ],
+      [
+        1,
+        1,
+        1,
+        1
+      ],
+      [
+        1,
+        1,
+        1,
+        1
+      ],
+      [
+        1,
+        1,
+        1,
+        1
+      ],
+      [
+        1,
+        1,
+        1,
+        1
+      ],
+      [
+        1,
+        1,
+        1,
+        1
+      ],
+      [
+        1,
+        1,
+        1,
+        1
+      ],
+      [
+        1,
+        1,
+        1,
+        1
+      ]
+    ],
+    "communication": "success",
+    "black_white_test": "deferred by user: no black tape or substitute available"
+  }
+}
