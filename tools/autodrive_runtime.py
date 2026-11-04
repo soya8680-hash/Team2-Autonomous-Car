@@ -480,6 +480,8 @@ def cli(cfg, program, spec, argv=None):
     report = None
     try:
         signal.signal(signal.SIGTERM, interrupt)
+        # Ctrl+Z 로 일시정지되면 정지 코드도 멈춘다: 바퀴를 멈추고 끝낸다
+        signal.signal(signal.SIGTSTP, interrupt)
         tty.setcbreak(sys.stdin.fileno())
         report = execute(cfg, program, Hardware(cfg.use_obstacle), key_pressed)
     finally:

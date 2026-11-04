@@ -165,6 +165,8 @@ def main():
 
     try:
         signal.signal(signal.SIGTERM, interrupt)
+        # Ctrl+Z 로 일시정지되면 정지 코드도 멈춘다: 바퀴를 멈추고 끝낸다
+        signal.signal(signal.SIGTSTP, interrupt)
         tty.setcbreak(sys.stdin.fileno())
         session(Hardware(use_ultrasonic=False), lambda: bool(select.select([sys.stdin], [], [], 0)[0]), dry=False)
     finally:

@@ -216,6 +216,8 @@ def run_on_robot(body=None, name='guarded_teleop'):
         # SSH 가 끊기면 SIGHUP 이 온다: 바퀴를 멈추고 끝낸다
         signal.signal(signal.SIGTERM, interrupt)
         signal.signal(signal.SIGHUP, interrupt)
+        # Ctrl+Z 로 일시정지되면 정지 코드도 멈춘다: 바퀴를 멈추고 끝낸다
+        signal.signal(signal.SIGTSTP, interrupt)
         session(Hardware(use_ultrasonic=False), dry=False, body=body, name=name)
     finally:
         termios.tcsetattr(sys.stdin, termios.TCSADRAIN, terminal)
