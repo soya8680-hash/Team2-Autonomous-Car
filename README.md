@@ -47,3 +47,24 @@ Codex는 `AGENTS.md`(작업 수칙)를 따릅니다.
 
 - 바퀴 없이 시험: `--simulate` (기록표에 안 남음) · `python3 tools/test_autodrive.py`
 - 기록표: `results/runs.csv` · 영상: `results/videos/` (레포에 안 올림) · 인쇄용 STOP 표지: `results/print/stop-sign.png`
+
+## 실제 트랙 — 먼저 읽기
+
+[트랙 지시서](specs/트랙-대구대.md) · 사진: `docs/track/`. 도로 전체가 검은색이라 **`06`, `02_line_follow`, `5_autodrive`는 트랙에서 실행하지 않는다**(차선을 보지 않고 직진할 수 있다). 트랙에서는 `07`을 출발점으로 쓴다.
+
+## 3조에서 가져온 자율주행 코드 — 2조 실제 주행 미검증
+
+출처: [raspbot-pbl-3team](https://github.com/jihooni217/raspbot-pbl-3team) `7e8a30d`. 규칙과 숫자는 3조 값이며 2조가 아직 확인하지 않았다. 기존 2조 프로그램은 그대로 있다.
+
+| 무엇 | 지시서 | 실행 |
+|---|---|---|
+| 카메라 노란 차선 따라가기 | [07-camera-lane.md](specs/07-camera-lane.md) | 바퀴 없이: `python3 missions/07_camera_lane.py --check` · 주행: `python3 missions/07_camera_lane.py` |
+| 검은 줄 + 사람·STOP 반응 | [06-drive-signs.md](specs/06-drive-signs.md) | `python3 missions/06_drive_signs.py --trial 시험이름` |
+| 초음파 정지·재출발 | [04-obstacle.md](specs/04-obstacle.md) | `python3 missions/04_obstacle.py` |
+| 검은 줄 따라가기 (06·07이 불러 씀) | [02-line-follow.md](specs/02-line-follow.md) | `python3 missions/02_line_follow.py --check-sensors` |
+| 표지 인식 (06이 불러 씀) · 카메라·녹화 (05·06·07이 불러 씀) | [05-signs.md](specs/05-signs.md) · [03-video.md](specs/03-video.md) | `missions/05_signs.py` · `missions/03_video.py` |
+
+- **주의:** `07`·`06`·`04`는 2조 프로그램과 달리 `--drive`나 「확인」 입력 없이 **실행하면 바로 바퀴가 돈다.** 바닥·사방 1m를 먼저 비운다. 아무 키나 누르면 멈춘다.
+- `07`은 카메라 각도를 스스로 맞추지 않는다. 먼저 `--check`로 노란 선 두 줄이 잡히는지 본다.
+- 바퀴 없이 시험: `python3 tools/test_camera_lane.py` · `test_drive_signs.py` · `test_obstacle.py` · `test_signs.py` · `test_line.py`
+
