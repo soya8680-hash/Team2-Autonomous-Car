@@ -23,8 +23,8 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from autodrive_core import (DistanceFilter, LaneTracker, Obs, Perception, StateMachine, STOP,
-                            MAX_WHEEL_SPEED, line_black)
+from autodrive_core import (BlockGate, DistanceFilter, LaneTracker, Obs, Perception, SpeedChooser,
+                            StateMachine, STOP, MAX_WHEEL_SPEED, line_black)
 
 ROOT = Path(__file__).resolve().parents[1]
 TZ = ZoneInfo('Asia/Seoul')
@@ -48,6 +48,51 @@ def find_lane(frame):
         _, xs = np.nonzero(mask[:, start:end])
         found.append(float(xs.mean() + start) if len(xs) >= 50 else None)
     return tuple(found)
+
+
+def block_masks(hsv):
+    """도로에 없는 색. (차단기 옅은 파랑, 초록). specs/6-트랙주행.md"""
+    import cv2
+    return (cv2.inRange(hsv, (85, 40, 100), (110, 140, 255)),
+            cv2.inRange(hsv, (40, 60, 60), (90, 255, 255)))
+
+
+def floor_color(frame):
+    """로봇 바로 앞 바닥색: 'red' / 'blue' / None. 둘 다면 빨강."""
+    import cv2
+    import numpy as np
+    hsv = cv2.cvtColor(frame[360:480, 128:512], cv2.COLOR_BGR2HSV)
+    red = cv2.inRange(hsv, (0, 90, 60), (10, 255, 255)) | cv2.inRange(hsv, (170, 90, 60), (179, 255, 255))
+    if np.mean(red > 0) > 0.15:
+        return 'red'
+    return 'blue' if np.mean(cv2.inRange(hsv, (90, 150, 60), (130, 255, 255)) > 0) > 0.15 else None
+
+
+def corridor(left, right, width):
+    """차선 사이 x 범위. 선을 모르면 화면 가운데 절반."""
+    if left is not None and right is not None:
+        start, end = left, right
+    elif left is not None and width is not None:
+        start, end = left, left + width
+    elif right is not None and width is not None:
+        start, end = right - width, right
+    else:
+        return 160, 480
+    start, end = max(0, int(start) + 15), min(640, int(end) - 15)
+    return (start, end) if end - start >= 40 else (160, 480)
+
+
+def find_scene(frame, left, right, width):
+    """(바닥색, 차선 안 흰 표시, 카메라 물체)."""
+    import cv2
+    import numpy as np
+    start, end = corridor(left, right, width)
+    hsv = cv2.cvtColor(frame[:300, start:end], cv2.COLOR_BGR2HSV)
+    band = hsv[120:]
+    white = cv2.inRange(band, (0, 0, 150), (179, 65, 255))
+    pale, green = block_masks(hsv)
+    hit = (int(np.count_nonzero(pale)) >= 1500) or (int(np.count_nonzero(green[120:])) >= 1500)
+    return floor_color(frame), float(np.mean(white > 0)) >= 0.08, hit
 
 
 def ignore_stop_signals():
@@ -309,6 +354,7 @@ def run(cfg, hw, vision, key_pressed, report, clock=time.monotonic, sleep=time.s
         current, last_write, shown_light, beep_until, tick = None, 0.0, 'unset', None, 0
         max_gap, previous = 0.0, None
         tracker, lane, lane_no, lane_x = LaneTracker(), None, 0, (None, None)
+        chooser, gate, scene, blocked = SpeedChooser(), BlockGate(), (None, False, False), False
         while True:
             now = clock()
             if previous is not None:
@@ -325,6 +371,9 @@ def run(cfg, hw, vision, key_pressed, report, clock=time.monotonic, sleep=time.s
                 if frame_no != lane_no:
                     lane_x = find_lane(frame)
                     lane, lane_no = tracker.update(*lane_x), frame_no
+                    scene = find_scene(frame, *lane_x, tracker.width)
+                    if cfg.use_camera_block:
+                        blocked = gate.update(scene[2], now)
                 lane_age = now - lane_t
             if cfg.use_obstacle and tick % ULTRASONIC_EVERY == 0:
                 distance.add(hw.read_distance_mm(), now)
@@ -332,12 +381,18 @@ def run(cfg, hw, vision, key_pressed, report, clock=time.monotonic, sleep=time.s
             seq, detections, det_t, frame_t = vision.latest()
             perception.update(seq, detections)
             age = now - min(frame_t, det_t) if cfg.use_yolo else now - frame_t
+            lane_base = None
+            if cfg.use_camera_lane:
+                lane_base = chooser.choose(now, lane.center if lane else None, scene[0], scene[1],
+                                           cfg.use_yolo and perception.confirmed('far'),
+                                           distance.value() if cfg.use_obstacle else None, cfg.slow_cm)
             action = sm.step(Obs(t=now, line_raw=raw, distance_cm=distance.value(),
                                  distance_fault=distance.fault(now),
                                  stop_sign=perception.confirmed('stop'),
                                  person_close=perception.confirmed('close'),
                                  person_far=perception.confirmed('far'),
-                                 vision_age=age, lane=lane, lane_age=lane_age))
+                                 vision_age=age, lane=lane, lane_age=lane_age,
+                                 camera_block=blocked, lane_base=lane_base))
             # 눌린 키는 이동 명령을 보내기 직전에 한 번 더 본다
             if key_pressed():
                 report['reason'] = 'KEY_STOP'
@@ -355,7 +410,8 @@ def run(cfg, hw, vision, key_pressed, report, clock=time.monotonic, sleep=time.s
                 hw.beep(False)
                 beep_until = None
             if cfg.use_camera_lane:
-                bits = 'lane ' + '/'.join('-' if x is None else f'{x:.0f}' for x in lane_x)
+                bits = 'lane ' + '/'.join('-' if x is None else f'{x:.0f}' for x in lane_x) + f' base {lane_base}'
+                bits += ''.join(f' {tag}' for tag, on in ((scene[0], scene[0]), ('mark', scene[1]), ('block', blocked)) if on)
             else:
                 bits = 'line ' + ''.join('B' if b else '-' for b in line_black(raw))
             dist = distance.value()
@@ -514,12 +570,16 @@ def cli(cfg, program, spec, argv=None):
         raise SystemExit('아무 키 정지를 위해 VS Code 터미널에서 직접 실행해야 합니다.')
     if not args.session or not args.attempt:
         raise SystemExit('기록표에 남기려면 --session 회차 --attempt 시도 를 함께 적어 주세요.')
-    print('아무 키나 누르면 바로 멈춥니다. 처음에는 항상 천천히, 손이 닿는 곳에서 지켜보세요.')
+    if cfg.use_camera_lane:
+        print('「종료」를 치면 첫 글자에서 멈춥니다. 급할 때는 스페이스를 누르세요(아무 키나 멈춥니다). 그 전까지 계속 달립니다.')
+    else:
+        print('아무 키나 누르면 바로 멈춥니다. 처음에는 항상 천천히, 손이 닿는 곳에서 지켜보세요.')
     if input('라즈봇을 바닥에 내려놓고 사방 1m를 비웠나요? 준비됐다면 "확인" 입력: ').strip() != '확인':
         print('취소 — 바퀴 명령 없음')
         return None
     terminal = termios.tcgetattr(sys.stdin)
     old_handler = signal.getsignal(signal.SIGTERM)
+    old_hup = signal.getsignal(signal.SIGHUP)
 
     def interrupt(signum, frame):
         raise KeyboardInterrupt('종료 신호')
@@ -530,14 +590,18 @@ def cli(cfg, program, spec, argv=None):
     report = None
     try:
         signal.signal(signal.SIGTERM, interrupt)
+        signal.signal(signal.SIGHUP, interrupt)  # 터미널이 끊겨도 멈춘다
         # Ctrl+Z 로 일시정지되면 정지 코드도 멈춘다: 바퀴를 멈추고 끝낸다
         signal.signal(signal.SIGTSTP, interrupt)
         tty.setcbreak(sys.stdin.fileno())
         report = execute(cfg, program, Hardware(cfg.use_obstacle, cfg.camera_pan, cfg.camera_tilt), key_pressed)
     finally:
+        if cfg.use_camera_lane:
+            time.sleep(1.5)  # 「종료」의 나머지 글자와 엔터가 기록 질문에 들어가지 않게
         termios.tcflush(sys.stdin, termios.TCIFLUSH)
         termios.tcsetattr(sys.stdin, termios.TCSADRAIN, terminal)
         signal.signal(signal.SIGTERM, old_handler)
+        signal.signal(signal.SIGHUP, old_hup)
     print_summary(report)
     ask_record(report, args.session, args.attempt)
     return report

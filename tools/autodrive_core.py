@@ -52,6 +52,7 @@ class Config:
     person_close_height: int = 200
     person_far_height: int = 80
     confirm_count: int = 2
+    person_close_confirm: int = 2
     stop_sign_seconds: float = 3.0
     stop_sign_ignore_seconds: float = 5.0
     person_clear_seconds: float = 1.0
@@ -63,6 +64,7 @@ class Config:
     use_camera_lane: bool = False
     lane_lost_seconds: float = 1.0
     lane_frame_fault_seconds: float = 0.5
+    use_camera_block: bool = True
 
 
 @dataclass
@@ -78,6 +80,8 @@ class Obs:
     vision_age: float = 0.0
     lane: Optional['Lane'] = None     # 트랙 주행일 때만
     lane_age: float = 0.0
+    camera_block: bool = False
+    lane_base: Optional[int] = None
 
 
 @dataclass
@@ -122,6 +126,12 @@ LANE_K = 0.4
 LANE_MAX_SPEED = 80
 LANE_SEARCH_OUTER = 60
 LANE_TRACK, LANE_WAIT, LANE_SEARCH, LANE_NONE = 'TRACK', 'WAIT', 'SEARCH', 'NONE'
+LANE_SLOW_SPEED = 25
+LANE_FAST_SPEED = 45
+LANE_CURVE_PX = 50
+LANE_SLOW_HOLD_SECONDS = 0.5
+BLOCK_CONFIRM = 2
+BLOCK_CLEAR_SECONDS = 1.0
 
 
 @dataclass(frozen=True)
@@ -136,6 +146,47 @@ def lane_speeds(center):
     left = max(0, min(LANE_MAX_SPEED, round(LANE_BASE_SPEED + correction)))
     right = max(0, min(LANE_MAX_SPEED, round(LANE_BASE_SPEED - correction)))
     return (left, left, right, right)
+
+
+def shift_speeds(speeds, base):
+    """좌우 차이를 둔 채 기본 속도만 옮긴다."""
+    return tuple(max(0, min(LANE_MAX_SPEED, s + base - LANE_BASE_SPEED)) for s in speeds)
+
+
+class SpeedChooser:
+    """본 것으로 기본 속도를 고른다. specs/6-트랙주행.md 「속도」."""
+
+    def __init__(self):
+        self.slow_until = None
+
+    def choose(self, t, center=None, floor=None, road_mark=False, person_far=False, distance_cm=None, slow_cm=40.0):
+        slow = (floor == 'red' or road_mark or person_far
+                or (distance_cm is not None and distance_cm <= slow_cm)
+                or (center is not None and abs(center - 320) >= LANE_CURVE_PX))
+        if slow:
+            self.slow_until = t + LANE_SLOW_HOLD_SECONDS
+        if self.slow_until is not None and t < self.slow_until:
+            return LANE_SLOW_SPEED
+        return LANE_FAST_SPEED if floor == 'blue' else LANE_BASE_SPEED
+
+
+class BlockGate:
+    """카메라 물체: 연속으로 봐야 막힘, 사라진 지 1초 지나야 풀림."""
+
+    def __init__(self):
+        self.count, self.blocked, self.last_hit = 0, False, None
+
+    def update(self, hit, t):
+        if hit:
+            self.count += 1
+            self.last_hit = t
+            if self.count >= BLOCK_CONFIRM:
+                self.blocked = True
+        else:
+            self.count = 0
+            if self.blocked and t - self.last_hit >= BLOCK_CLEAR_SECONDS:
+                self.blocked = False
+        return self.blocked
 
 
 class LaneTracker:
@@ -216,7 +267,8 @@ class Perception:
             self.counts[key] = self.counts[key] + 1 if hit else 0
 
     def confirmed(self, key):
-        return self.counts[key] >= self.cfg.confirm_count
+        need = self.cfg.person_close_confirm if key == 'close' else self.cfg.confirm_count
+        return self.counts[key] >= need
 
 
 LIGHT = {FOLLOW: GREEN, SLOW: YELLOW, STOP_SIGN: RED, WAIT_PERSON: RED,
@@ -274,6 +326,8 @@ class StateMachine:
 
         near = c.use_obstacle and o.distance_cm is not None and o.distance_cm <= c.obstacle_stop_cm
         clear = (not c.use_obstacle) or (o.distance_cm is not None and o.distance_cm >= c.obstacle_resume_cm)
+        if o.camera_block:
+            near, clear = True, False
         person_close = c.use_yolo and o.person_close
 
         # 2) 멈춰서 기다리는 상태
@@ -295,7 +349,7 @@ class StateMachine:
 
         # 3) 달리다가 멈출 일
         if near:
-            return self._hold(WAIT_OBSTACLE, o.t, f'distance {o.distance_cm:.1f}cm')
+            return self._hold(WAIT_OBSTACLE, o.t, 'camera block' if o.camera_block else f'distance {o.distance_cm:.1f}cm')
         if person_close:
             self.person_clear_since = None
             return self._hold(WAIT_PERSON, o.t, 'person close')
@@ -353,6 +407,8 @@ class StateMachine:
             return self._action(FOLLOW, lane.speeds, o.t, 'lane search')
         self.lost_since, self.lost_counted = None, False
         if lane.kind == LANE_WAIT:
-            return self._action(FOLLOW, STOP, o.t, 'lane width wait')
-        return self._action(FOLLOW, lane.speeds, o.t, 'lane')
+            return self._action(FOLLOW, STOP, o.t, 'lane width wait')  # 바퀴 0
+        base = o.lane_base if o.lane_base is not None else LANE_BASE_SPEED
+        state = SLOW if base < LANE_BASE_SPEED else FOLLOW
+        return self._action(state, shift_speeds(lane.speeds, base), o.t, 'lane')
 
