@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 지시서: specs/3-장애물.md · specs/4-욜로.md · specs/5-오토드라이브.md · specs/기능-보행자제동.md
+# 지시서: specs/3-장애물.md · specs/4-욜로.md · specs/5-오토드라이브.md · specs/기능-보행자제동.md · specs/6-트랙주행.md
 """오토드라이브의 두뇌(상태표). 장치에 접근하지 않아서 가짜 값으로 시험할 수 있다.
 
 상태표를 바꾸려면 지시서를 먼저 고치고, 그다음 아래 Config 숫자를 맞춘다.
@@ -56,6 +56,13 @@ class Config:
     stop_sign_ignore_seconds: float = 5.0
     person_clear_seconds: float = 1.0
     vision_fault_seconds: float = 2.0
+    # 카메라 각도 — specs/기능-자유주행-사람정지.md
+    camera_pan: int = 90
+    camera_tilt: int = 40
+    # 트랙 주행 — specs/6-트랙주행.md (켜면 라인센서 대신 카메라 차선으로 조향)
+    use_camera_lane: bool = False
+    lane_lost_seconds: float = 1.0
+    lane_frame_fault_seconds: float = 0.5
 
 
 @dataclass
@@ -69,6 +76,8 @@ class Obs:
     person_close: bool = False
     person_far: bool = False
     vision_age: float = 0.0
+    lane: Optional['Lane'] = None     # 트랙 주행일 때만
+    lane_age: float = 0.0
 
 
 @dataclass
@@ -105,6 +114,57 @@ def wheel_speeds(direction, fast, inner):
     if direction == 'RIGHT':
         return (fast, fast, inner, inner)
     return (fast,) * 4
+
+
+# 차선 값 — specs/6-트랙주행.md
+LANE_BASE_SPEED = 35
+LANE_K = 0.4
+LANE_MAX_SPEED = 80
+LANE_SEARCH_OUTER = 60
+LANE_TRACK, LANE_WAIT, LANE_SEARCH, LANE_NONE = 'TRACK', 'WAIT', 'SEARCH', 'NONE'
+
+
+@dataclass(frozen=True)
+class Lane:
+    kind: str
+    speeds: tuple = STOP
+    center: Optional[float] = None
+
+
+def lane_speeds(center):
+    correction = LANE_K * (center - 320)
+    left = max(0, min(LANE_MAX_SPEED, round(LANE_BASE_SPEED + correction)))
+    right = max(0, min(LANE_MAX_SPEED, round(LANE_BASE_SPEED - correction)))
+    return (left, left, right, right)
+
+
+class LaneTracker:
+    """왼쪽·오른쪽 선 위치(없으면 None)를 바퀴 값으로 바꾼다. 시간과 정지 판단은 상태표가 한다."""
+
+    def __init__(self):
+        self.width = None
+        self.last_turn = None
+
+    def update(self, left, right):
+        if left is None and right is None:
+            if self.last_turn is None:
+                return Lane(LANE_NONE)
+            outer = LANE_SEARCH_OUTER
+            speeds = (outer, outer, 0, 0) if self.last_turn == 'RIGHT' else (0, 0, outer, outer)
+            return Lane(LANE_SEARCH, speeds)
+        if left is not None and right is not None:
+            self.width = right - left
+            center = (left + right) / 2
+        elif self.width is None:
+            return Lane(LANE_WAIT)
+        elif left is not None:
+            center = left + self.width / 2
+        else:
+            center = right - self.width / 2
+        speeds = lane_speeds(center)
+        if speeds[0] != speeds[2]:
+            self.last_turn = 'RIGHT' if speeds[0] > speeds[2] else 'LEFT'
+        return Lane(LANE_TRACK, speeds, center)
 
 
 class DistanceFilter:
@@ -207,6 +267,8 @@ class StateMachine:
             return self._action(EMERGENCY, STOP, o.t, 'TIME_LIMIT')
         if o.vision_age > c.vision_fault_seconds:
             return self._action(EMERGENCY, STOP, o.t, 'CAMERA_FAULT')
+        if c.use_camera_lane and o.lane_age > c.lane_frame_fault_seconds:
+            return self._action(EMERGENCY, STOP, o.t, 'CAMERA_FAULT')
         if c.use_obstacle and o.distance_fault:
             return self._action(EMERGENCY, STOP, o.t, 'ULTRASONIC_FAULT')
 
@@ -241,6 +303,9 @@ class StateMachine:
             self.stop_until = o.t + c.stop_sign_seconds
             return self._hold(STOP_SIGN, o.t, 'stop sign')
 
+        if c.use_camera_lane:
+            return self._lane_step(o)
+
         # 4) 줄 따라가기
         direction = line_direction(o.line_raw)
         if direction == 'ALL_BLACK':
@@ -269,3 +334,25 @@ class StateMachine:
         fast, inner = (c.slow_speed, c.slow_inner_speed) if slow else (c.speed, c.inner_speed)
         self.last_speeds = wheel_speeds('STRAIGHT' if direction == 'ALL_BLACK' else direction, fast, inner)
         return self._action(SLOW if slow else FOLLOW, self.last_speeds, o.t, direction)
+
+    def _lane_step(self, o):
+        """트랙 주행의 조향. 멈춰 있던 시간은 _hold 가 lost_since 를 지워 세지 않는다."""
+        c = self.cfg
+        lane = o.lane if o.lane is not None else Lane(LANE_WAIT)
+        if lane.kind == LANE_NONE:
+            return self._action(EMERGENCY, STOP, o.t, 'LOST_LINE')
+        if lane.kind == LANE_SEARCH:
+            if self.lost_since is None:
+                self.lost_since = o.t
+            lost_for = o.t - self.lost_since
+            if lost_for >= 0.1 and not self.lost_counted:
+                self.off_line_count += 1
+                self.lost_counted = True
+            if lost_for >= c.lane_lost_seconds:
+                return self._action(EMERGENCY, STOP, o.t, 'LOST_LINE')
+            return self._action(FOLLOW, lane.speeds, o.t, 'lane search')
+        self.lost_since, self.lost_counted = None, False
+        if lane.kind == LANE_WAIT:
+            return self._action(FOLLOW, STOP, o.t, 'lane width wait')
+        return self._action(FOLLOW, lane.speeds, o.t, 'lane')
+

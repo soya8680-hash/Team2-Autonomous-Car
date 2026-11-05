@@ -50,7 +50,7 @@
 | 03 | `missions/01_blackbox.py` | `missions/03_video.py` |
 | 04 | `missions/3_obstacle.py` | `missions/04_obstacle.py` |
 | 05 | `missions/4_yolo.py` | `missions/05_signs.py` |
-| 06 | `missions/5_autodrive.py` | `missions/06_drive_signs.py` |
+| 06 | `missions/5_autodrive.py` · 트랙용 `missions/6_track.py` | `missions/06_drive_signs.py` |
 | 07 | `missions/guarded_teleop.py` 등 | `missions/07_camera_lane.py` (노란 차선) |
 | 08 | `missions/text_command.py` | |
 

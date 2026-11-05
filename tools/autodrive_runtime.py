@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 지시서: specs/3-장애물.md · specs/4-욜로.md · specs/5-오토드라이브.md
+# 지시서: specs/3-장애물.md · specs/4-욜로.md · specs/5-오토드라이브.md · specs/6-트랙주행.md
 """오토드라이브 실행부: 센서 읽기 · 바퀴 · 블랙박스 · 기록표.
 
   (옵션 없음)   설명만 출력. 장치 접근 없음
@@ -23,7 +23,7 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from autodrive_core import (DistanceFilter, Obs, Perception, StateMachine, STOP,
+from autodrive_core import (DistanceFilter, LaneTracker, Obs, Perception, StateMachine, STOP,
                             MAX_WHEEL_SPEED, line_black)
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -35,6 +35,21 @@ LOOP_SECONDS = 0.02
 ULTRASONIC_EVERY = 3
 
 
+def find_lane(frame):
+    """640×480 화면에서 노란 선의 왼쪽·오른쪽 x 평균. 없으면 None. specs/6-트랙주행.md"""
+    import cv2
+    import numpy as np
+    if frame is None or frame.shape != (480, 640, 3):
+        raise ValueError('차선 입력 화면은 640x480 BGR이어야 합니다.')
+    hsv = cv2.cvtColor(frame[120:300], cv2.COLOR_BGR2HSV)
+    mask = cv2.inRange(hsv, (15, 80, 100), (40, 255, 255))
+    found = []
+    for start, end in ((0, 320), (320, 640)):
+        _, xs = np.nonzero(mask[:, start:end])
+        found.append(float(xs.mean() + start) if len(xs) >= 50 else None)
+    return tuple(found)
+
+
 def ignore_stop_signals():
     """정리(바퀴 정지 · 기록 저장) 도중 Ctrl+C 등이 또 들어와도 끊기지 않게 한다."""
     for name in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP, signal.SIGTSTP):
@@ -44,14 +59,14 @@ def ignore_stop_signals():
 class Hardware:
     """라즈봇 장치. 드라이버가 숨기는 I2C 오류도 예외로 받도록 버스를 직접 쓴다."""
 
-    def __init__(self, use_ultrasonic):
+    def __init__(self, use_ultrasonic, pan=90, tilt=40):
         from Raspbot_Lib import Raspbot
         self.bot = Raspbot()
         self.dev, self.addr = self.bot._device, self.bot._addr
         self.use_ultrasonic = use_ultrasonic
         # 카메라 각도 — specs/기능-자유주행-사람정지.md (드라이버 함수: 서보는 정지 안전과 무관)
-        self.bot.Ctrl_Servo(1, 90)
-        self.bot.Ctrl_Servo(2, 40)
+        self.bot.Ctrl_Servo(1, pan)
+        self.bot.Ctrl_Servo(2, tilt)
         if use_ultrasonic:
             self.dev.write_i2c_block_data(self.addr, 0x07, [1])
             time.sleep(1)
@@ -165,7 +180,7 @@ class Vision:
         self.lock = threading.Lock()
         self.new_frame = threading.Event()
         self.stopping = threading.Event()
-        self.frame, self.frame_t = None, 0.0
+        self.frame, self.frame_t, self.frame_no = None, 0.0, 0
         self.seq, self.detections, self.det_t = 0, [], 0.0
         self.status = 'START'
         self.error = None
@@ -193,6 +208,10 @@ class Vision:
     def latest(self):
         with self.lock:
             return self.seq, list(self.detections), self.det_t, self.frame_t
+
+    def latest_frame(self):
+        with self.lock:
+            return self.frame, self.frame_no, self.frame_t
 
     def set_status(self, text):
         with self.lock:
@@ -229,6 +248,7 @@ class Vision:
                 now = time.monotonic()
                 with self.lock:
                     self.frame, self.frame_t = frame, now
+                    self.frame_no += 1
                     detections, status = list(self.detections), self.status
                 self.new_frame.set()
                 shown = draw(frame.copy(), detections)
@@ -288,6 +308,7 @@ def run(cfg, hw, vision, key_pressed, report, clock=time.monotonic, sleep=time.s
         perception = Perception(cfg)
         current, last_write, shown_light, beep_until, tick = None, 0.0, 'unset', None, 0
         max_gap, previous = 0.0, None
+        tracker, lane, lane_no, lane_x = LaneTracker(), None, 0, (None, None)
         while True:
             now = clock()
             if previous is not None:
@@ -296,7 +317,15 @@ def run(cfg, hw, vision, key_pressed, report, clock=time.monotonic, sleep=time.s
             if key_pressed():
                 report['reason'] = 'KEY_STOP'
                 break
-            raw = hw.read_line()
+            # 트랙은 도로가 검어서 라인센서를 쓰지 않는다 (1111 = 검정 없음)
+            raw = 0b1111 if cfg.use_camera_lane else hw.read_line()
+            lane_age = 0.0
+            if cfg.use_camera_lane:
+                frame, frame_no, lane_t = vision.latest_frame()
+                if frame_no != lane_no:
+                    lane_x = find_lane(frame)
+                    lane, lane_no = tracker.update(*lane_x), frame_no
+                lane_age = now - lane_t
             if cfg.use_obstacle and tick % ULTRASONIC_EVERY == 0:
                 distance.add(hw.read_distance_mm(), now)
             tick += 1
@@ -308,7 +337,7 @@ def run(cfg, hw, vision, key_pressed, report, clock=time.monotonic, sleep=time.s
                                  stop_sign=perception.confirmed('stop'),
                                  person_close=perception.confirmed('close'),
                                  person_far=perception.confirmed('far'),
-                                 vision_age=age))
+                                 vision_age=age, lane=lane, lane_age=lane_age))
             # 눌린 키는 이동 명령을 보내기 직전에 한 번 더 본다
             if key_pressed():
                 report['reason'] = 'KEY_STOP'
@@ -325,10 +354,13 @@ def run(cfg, hw, vision, key_pressed, report, clock=time.monotonic, sleep=time.s
             elif beep_until is not None and now >= beep_until:
                 hw.beep(False)
                 beep_until = None
-            bits = ''.join('B' if b else '-' for b in line_black(raw))
+            if cfg.use_camera_lane:
+                bits = 'lane ' + '/'.join('-' if x is None else f'{x:.0f}' for x in lane_x)
+            else:
+                bits = 'line ' + ''.join('B' if b else '-' for b in line_black(raw))
             dist = distance.value()
             names = ','.join(sorted({d[0] for d in detections})) or 'none'
-            vision.set_status(f'{action.state} L{action.speeds[0]} R{action.speeds[2]} line {bits} '
+            vision.set_status(f'{action.state} L{action.speeds[0]} R{action.speeds[2]} {bits} '
                               f'{"--" if dist is None else f"{dist:.0f}cm"} see {names}')
             if action.done:
                 report['reason'] = action.reason
@@ -393,10 +425,18 @@ def execute(cfg, program, hw, key_pressed, fake_detections=None):
         print('카메라와 인식 준비 중...', flush=True)
         if not vision.wait_ready():
             raise RuntimeError('카메라/YOLO 준비 실패: ' + str(vision.error))
-        raw = hw.read_line()
-        print(f'출발 전 센서: 라인 {raw:04b}', flush=True)
-        if not any(line_black(raw)):
-            print('주의 — 줄이 센서 아래에 없습니다. 이대로면 0.5초 뒤 비상 정지합니다.')
+        if cfg.use_camera_lane:
+            left, right = find_lane(vision.latest_frame()[0])
+            print(f'출발 전 차선: 왼쪽 {left} · 오른쪽 {right}', flush=True)
+            if left is None and right is None:
+                print('주의 — 노란 선이 안 보입니다. 카메라 각도(--tilt)와 위치를 확인하세요. 이대로면 바로 비상 정지합니다.')
+            elif left is None or right is None:
+                print('주의 — 한쪽 선만 보입니다. 두 선이 함께 보일 때까지 출발하지 않습니다.')
+        else:
+            raw = hw.read_line()
+            print(f'출발 전 센서: 라인 {raw:04b}', flush=True)
+            if not any(line_black(raw)):
+                print('주의 — 줄이 센서 아래에 없습니다. 이대로면 0.5초 뒤 비상 정지합니다.')
         if cfg.use_obstacle:
             mm = hw.read_distance_mm()
             print(f'출발 전 초음파: {mm / 10:.1f} cm', flush=True)
@@ -440,7 +480,10 @@ def print_summary(report):
 def ask_record(report, session, attempt):
     """완주와 손댄 횟수는 사람만 안다. 눈으로 본 대로 입력받아 기록표에 한 줄 남긴다."""
     finished = report.get('reason') == 'FINISH_LINE'
-    print(f'\n프로그램 판단: {"결승선 도착" if finished else "도착 못 함"}. 실제로 본 대로 입력하세요.')
+    if report['config'].get('use_camera_lane'):
+        print('\n트랙 주행은 결승선을 판단하지 않습니다. 실제로 본 대로 입력하세요.')
+    else:
+        print(f'\n프로그램 판단: {"결승선 도착" if finished else "도착 못 함"}. 실제로 본 대로 입력하세요.')
     done = input('완주했나요? (예/아니오): ').strip() or '아니오'
     touches = input('사람이 손댄 횟수 (숫자): ').strip() or '?'
     note = input('메모 (조명 · 배터리 · 특이 사항): ').strip()
@@ -490,7 +533,7 @@ def cli(cfg, program, spec, argv=None):
         # Ctrl+Z 로 일시정지되면 정지 코드도 멈춘다: 바퀴를 멈추고 끝낸다
         signal.signal(signal.SIGTSTP, interrupt)
         tty.setcbreak(sys.stdin.fileno())
-        report = execute(cfg, program, Hardware(cfg.use_obstacle), key_pressed)
+        report = execute(cfg, program, Hardware(cfg.use_obstacle, cfg.camera_pan, cfg.camera_tilt), key_pressed)
     finally:
         termios.tcflush(sys.stdin, termios.TCIFLUSH)
         termios.tcsetattr(sys.stdin, termios.TCSADRAIN, terminal)
