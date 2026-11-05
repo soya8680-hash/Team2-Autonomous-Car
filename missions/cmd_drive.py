@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # 지시서: specs/기능-원격조종-사람정지.md
-"""터미널에 글자 명령을 쳐서 움직인다. 예: w 2 → 2초 앞으로. 앞에 사람이 가까우면 멈춘다.
+"""터미널에 글자 명령을 쳐서 움직인다. 예: w 2 → 2초 앞으로. 카메라에 사람이 인식되면 거리와 무관하게 멈춘다.
 
   python3 missions/cmd_drive.py --dry    바퀴 없이 명령과 판단만
   python3 missions/cmd_drive.py --drive  실제 조종 (터미널에서 직접)
@@ -127,7 +127,7 @@ def shell(ctrl, vision):
         elif kind == 'move':
             result = execute_move(ctrl, vision, *value)
             print({'DONE': '끝', 'KEY_STOP': '키를 눌러 정지',
-                   'PERSON_CLOSE': '사람이 가까워서 정지 · 잠금 (안 보이면 다시 치세요)',
+                   'PERSON_DETECTED': '사람이 인식되어 정지 · 잠금 (안 보이면 다시 치세요)',
                    'CAMERA_FAULT': '카메라가 멈춰서 정지 · 잠금'}.get(result, result))
 
 

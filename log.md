@@ -82,3 +82,7 @@
 - 2026-11-04 | 사용자·Codex | 초음파 정면 20~30cm 물체 준비 후 10초 재측정. 20회 모두 34mm 고정, I2C 오류 0회. 실제 물체 거리와 불일치하여 거리 정확도 미검증. 센서 앞 케이블·차체 가림 확인 요청. results/ultrasonic-recheck-20261104-134426.json. 바퀴 명령 없음.
 
 - 2026-11-04 | 사용자·Codex | 사용자 Claude 설치·채팅 설정 요청. 공식 네이티브 ARM64 Claude Code stable 2.1.311 설치 및 --version 확인, VS Code 공식 Anthropic.claude-code 2.1.318 설치 확인. ~/.claude/CLAUDE.md에 한국어·진행 보고 지침, 프로젝트 CLAUDE.md에 AGENTS.md 참조 및 현재 점검 상태 인수인계. ~/.bashrc에 사용자 바이너리 PATH 추가·문법 확인. 인증 상태 loggedIn=false, 사용자 브라우저 로그인 필요. 실제 모델 응답·하드웨어 실행 미검증.
+
+- 2026-11-04 | 사용자·Codex | 35m를 35cm로 바꾼 기존 해석을 사용자 확인으로 정정. 사용자가 거리 무관 사람 인식 정지를 선택 | 지시서 먼저 수정, guarded_teleop의 350px·연속 2회 조건 제거, 첫 사람 인식에서 정지·키 차단, 관측 전 이동 차단, cmd_drive 공유 처리·README 갱신 | 가짜 장치 시험 55개 통과. 현재 실행 환경 /dev/video* 없음으로 카메라 단독 검사 실패. USB 연결 또는 카메라 장치 노출 확인 필요. 모터 접근 없음, 실제 정지·35m 감지 미검증.
+
+- 2026-11-04 | Codex | guarded_teleop --drive 카메라 열기 실패 | 실제 장치 확인 결과 카메라 연결 정상, 기존 --dry(PID 3276)가 점유. 바퀴 없는 해당 시험만 정상 종료 | 카메라 사진 640×480 및 YOLO 추론 0.073초 성공, 검사 후 카메라 해제. 실패한 실제 조종 기록의 stop_errors/stop_errors_final 모두 빈 목록. 이번 점검 모터 접근 없음. 앞선 /dev/video* 없음은 점검 샌드박스의 장치 미노출이었음. results/guarded-camera-recheck-20261104.json.

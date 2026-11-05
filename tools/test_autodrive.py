@@ -393,6 +393,7 @@ class GuardedTeleop(unittest.TestCase):
         self.bot = FakeBot()
         self.c = self.gt.Controller(self.bot)
         self.seq = 0
+        self.see(0.1)
 
     def see(self, now, detections=(), det_t=None):
         self.seq += 1
@@ -411,7 +412,7 @@ class GuardedTeleop(unittest.TestCase):
     def test_close_person_stops_and_blocks_all_moves(self):
         self.c.key('w', 1.0)
         self.see(1.0, self.PERSON)
-        self.assertEqual(self.bot.wheels[-1], (60,) * 4)  # 한 번은 잘못 본 것일 수 있다
+        self.assertEqual(self.bot.wheels[-1], STOP)  # 첫 인식부터 멈춘다
         self.see(1.1, self.PERSON)
         self.assertTrue(self.c.locked)
         self.assertEqual(self.bot.wheels[-1], STOP)
@@ -443,11 +444,35 @@ class GuardedTeleop(unittest.TestCase):
         self.see(2.6)
         self.assertTrue(self.c.locked)
 
-    def test_far_person_does_not_lock(self):
-        far = [('person', 0.9, (0, 0, 100, 349))]
-        self.see(1.0, far)
-        self.see(1.1, far)
+    def test_small_person_locks_on_first_detection(self):
+        for height in (1, 10, 80, 349, 400):
+            with self.subTest(height=height):
+                bot = FakeBot()
+                ctrl = self.gt.Controller(bot)
+                ctrl.update(1, [], 1.0, 1.0, 1.0)
+                ctrl.key('w', 1.0)
+                ctrl.update(2, [('person', 0.5, (0, 0, 1, height))], 1.1, 1.1, 1.1)
+                self.assertTrue(ctrl.locked)
+                self.assertEqual(ctrl.lock_reason, 'PERSON_DETECTED')
+                self.assertEqual(bot.wheels[-1], STOP)
+
+    def test_no_movement_before_first_observation(self):
+        ctrl = self.gt.Controller(self.bot)
+        for key in self.gt.MOVES:
+            ctrl.key(key, 1.0)
+        self.assertEqual(self.bot.wheels, [])
+
+    def test_low_score_and_other_objects_do_not_lock(self):
+        self.see(1.0, [('person', 0.49, (0, 0, 100, 400)),
+                       ('chair', 0.99, (0, 0, 100, 400))])
         self.assertFalse(self.c.locked)
+
+    def test_same_person_result_still_blocks_keys(self):
+        self.see(1.0, [('person', 0.9, (0, 0, 4, 10))])
+        for now in (1.1, 1.2, 1.3):
+            self.c.update(self.seq, [('person', 0.9, (0, 0, 4, 10))], 1.0, now, now)
+            self.c.key('w', now)
+        self.assertTrue(all(w == STOP for w in self.bot.wheels))
 
     def test_camera_freeze_locks(self):
         self.c.key('w', 1.0)
@@ -520,13 +545,13 @@ class CmdDrive(unittest.TestCase):
 
     def test_person_already_close_never_moves(self):
         result, bot, ctrl, _ = self.play(person_after=0)
-        self.assertEqual(result, 'PERSON_CLOSE')
+        self.assertEqual(result, 'PERSON_DETECTED')
         self.assertTrue(all(w == STOP for w in bot.wheels))
         self.assertEqual(bot.beeps, [True, False])
 
     def test_person_during_move_stops_early(self):
         result, bot, _, elapsed = self.play(seconds=5, person_after=1.0)
-        self.assertEqual(result, 'PERSON_CLOSE')
+        self.assertEqual(result, 'PERSON_DETECTED')
         self.assertLess(elapsed, 2.0)
         self.assertEqual(bot.wheels[-1], STOP)
         self.assertEqual(bot.beeps, [True, False])

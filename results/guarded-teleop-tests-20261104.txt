@@ -1,0 +1,8 @@
+........................../home/pi/raspbot/tools/test_autodrive.py:587: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpbozmrofm/runs.csv' mode='r' encoding='utf-8'>
+  rows = list(csv.reader(open(path, encoding='utf-8')))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+.............................
+----------------------------------------------------------------------
+Ran 55 tests in 0.028s
+
+OK

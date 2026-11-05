@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # 지시서: specs/기능-원격조종-사람정지.md
-"""키보드로 조종하되 앞에 사람이 가까우면 자동으로 멈추고 잠근다. 앞쪽 사람만 본다.
+"""키보드로 조종하되 사람이 인식되면 크기·거리와 무관하게 멈추고 잠근다.
 
   python3 missions/guarded_teleop.py --dry    바퀴 없이 키와 판단만
   python3 missions/guarded_teleop.py --drive  실제 조종 (터미널에서 직접)
@@ -18,11 +18,11 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'tools'))
-from autodrive_core import Config, Perception, GREEN, RED
+from autodrive_core import Config, GREEN, RED
 from autodrive_runtime import Hardware, Vision, check_video, ignore_stop_signals
 
 ROOT = Path(__file__).resolve().parents[1]
-CFG = Config(use_obstacle=False, use_feature=False, person_close_height=350)
+CFG = Config(use_obstacle=False, use_feature=False)
 MOVES = {'w': (1, 1, 1, 1), 's': (-1, -1, -1, -1), 'a': (-1, 1, 1, -1),
          'd': (1, -1, -1, 1), 'q': (-1, -1, 1, 1), 'e': (1, 1, -1, -1)}
 START_SPEED, MIN_SPEED, MAX_SPEED, SPEED_STEP = 60, 40, 100, 20
@@ -56,7 +56,7 @@ class Controller:
 
     def __init__(self, hw):
         self.hw = hw
-        self.perception = Perception(CFG)
+        self.has_observation = False
         self.speed, self.moving, self.last_press = START_SPEED, None, 0.0
         self.locked, self.lock_reason, self.clear_since = False, '', None
         self.beep_until = None
@@ -70,11 +70,12 @@ class Controller:
             raise OSError('정지 통신 실패: ' + '; '.join(errors))
 
     def update(self, seq, detections, det_t, frame_t, now):
-        self.perception.update(seq, detections)
+        self.has_observation = seq > 0 and det_t > 0 and frame_t > 0
         heights = [d[2][3] for d in detections if d[0] == 'person' and d[1] >= CFG.min_score]
         self.person_height = max(heights, default=0)
-        fault = now - min(det_t, frame_t) > CAMERA_FAULT
-        danger = 'CAMERA_FAULT' if fault else 'PERSON_CLOSE' if self.perception.confirmed('close') else None
+        fault = not self.has_observation or now - min(det_t, frame_t) > CAMERA_FAULT
+        person = any(d[0] == 'person' and d[1] >= CFG.min_score for d in detections)
+        danger = 'CAMERA_FAULT' if fault else 'PERSON_DETECTED' if person else None
         if self.beep_until is not None and now >= self.beep_until:
             self.hw.beep(False)
             self.beep_until = None
@@ -109,7 +110,7 @@ class Controller:
             self.speed = min(MAX_SPEED, self.speed + SPEED_STEP)
         elif key in '-_':
             self.speed = max(MIN_SPEED, self.speed - SPEED_STEP)
-        elif key in MOVES and not self.locked:
+        elif key in MOVES and self.has_observation and not self.locked:
             self.moving, self.last_press = key, now
             self.hw.set_wheels(tuple(sign * self.speed for sign in MOVES[key]))
         return True
@@ -140,7 +141,8 @@ def session(hw, dry, body=None, name='guarded_teleop'):
     prefix = 'dry-' if dry else ''
     video = ROOT / 'results' / 'videos' / f'{prefix}{name}-{stamp}.mp4'
     video.parent.mkdir(parents=True, exist_ok=True)
-    report = {'program': name, 'dry': dry, 'person_stop_height': CFG.person_close_height,
+    report = {'program': name, 'dry': dry, 'person_stop_mode': 'any_detected_person',
+              'person_min_score': CFG.min_score, 'distance_measured': False,
               'video': str(video.relative_to(ROOT))}
     vision = Vision(video, True)
     ctrl = Controller(hw)
@@ -203,7 +205,8 @@ def main():
 
 def run_on_robot(body=None, name='guarded_teleop'):
     """준비 확인을 받고 실제 장치로 실행한다. 터미널이 끊겨도 바퀴를 멈춘다."""
-    print('앞쪽 사람만 보고 멈춥니다. 옆과 뒤의 사람, 벽, 의자에는 멈추지 않습니다.')
+    print('카메라에 사람이 인식되면 크기·거리와 관계없이 정지합니다. 35m 거리 측정 기능은 없습니다.')
+    print('카메라 시야 밖의 사람이나 인식하지 못한 사람은 감지할 수 없습니다.')
     if input('라즈봇을 바닥에 내려놓고 사방 1m를 비웠나요? 준비됐다면 "확인" 입력: ').strip() != '확인':
         print('취소 — 바퀴 명령 없음')
         return

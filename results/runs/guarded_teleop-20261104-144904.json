@@ -1,0 +1,186 @@
+{
+  "program": "guarded_teleop",
+  "dry": false,
+  "person_stop_mode": "any_detected_person",
+  "person_min_score": 0.5,
+  "distance_measured": false,
+  "video": "results/videos/guarded_teleop-20261104-144904.mp4",
+  "reason": "QUIT",
+  "stop_errors": [],
+  "stop_errors_final": [],
+  "vision_error": null,
+  "events": [
+    {
+      "t": 577.896066508,
+      "lock": "PERSON_DETECTED",
+      "person_height": 390
+    },
+    {
+      "t": 583.039013944,
+      "unlock": true
+    },
+    {
+      "t": 583.208073937,
+      "lock": "PERSON_DETECTED",
+      "person_height": 412
+    },
+    {
+      "t": 594.130432872,
+      "unlock": true
+    },
+    {
+      "t": 620.976988469,
+      "lock": "PERSON_DETECTED",
+      "person_height": 419
+    },
+    {
+      "t": 631.33506784,
+      "unlock": true
+    },
+    {
+      "t": 631.943909303,
+      "lock": "PERSON_DETECTED",
+      "person_height": 301
+    },
+    {
+      "t": 633.015311646,
+      "unlock": true
+    },
+    {
+      "t": 639.768990442,
+      "lock": "PERSON_DETECTED",
+      "person_height": 427
+    },
+    {
+      "t": 655.920069497,
+      "unlock": true
+    },
+    {
+      "t": 657.14765437,
+      "lock": "PERSON_DETECTED",
+      "person_height": 405
+    },
+    {
+      "t": 663.619167929,
+      "unlock": true
+    },
+    {
+      "t": 672.135165577,
+      "lock": "PERSON_DETECTED",
+      "person_height": 162
+    },
+    {
+      "t": 686.532054124,
+      "unlock": true
+    },
+    {
+      "t": 687.9279532,
+      "lock": "PERSON_DETECTED",
+      "person_height": 404
+    },
+    {
+      "t": 689.091676538,
+      "unlock": true
+    },
+    {
+      "t": 698.014996247,
+      "lock": "PERSON_DETECTED",
+      "person_height": 169
+    },
+    {
+      "t": 699.129015501,
+      "unlock": true
+    },
+    {
+      "t": 700.855456993,
+      "lock": "PERSON_DETECTED",
+      "person_height": 181
+    },
+    {
+      "t": 704.014256306,
+      "unlock": true
+    },
+    {
+      "t": 706.268239963,
+      "lock": "PERSON_DETECTED",
+      "person_height": 216
+    },
+    {
+      "t": 707.344261513,
+      "unlock": true
+    },
+    {
+      "t": 708.595587313,
+      "lock": "PERSON_DETECTED",
+      "person_height": 112
+    },
+    {
+      "t": 709.692672757,
+      "unlock": true
+    },
+    {
+      "t": 715.635245218,
+      "lock": "PERSON_DETECTED",
+      "person_height": 473
+    },
+    {
+      "t": 722.664804673,
+      "unlock": true
+    },
+    {
+      "t": 733.89205324,
+      "lock": "PERSON_DETECTED",
+      "person_height": 141
+    },
+    {
+      "t": 737.72346962,
+      "unlock": true
+    },
+    {
+      "t": 740.494316835,
+      "lock": "PERSON_DETECTED",
+      "person_height": 185
+    },
+    {
+      "t": 741.790661654,
+      "unlock": true
+    },
+    {
+      "t": 750.484938701,
+      "lock": "PERSON_DETECTED",
+      "person_height": 331
+    },
+    {
+      "t": 752.362701099,
+      "unlock": true
+    },
+    {
+      "t": 753.684454749,
+      "lock": "PERSON_DETECTED",
+      "person_height": 470
+    },
+    {
+      "t": 754.909154852,
+      "unlock": true
+    },
+    {
+      "t": 759.184263115,
+      "lock": "PERSON_DETECTED",
+      "person_height": 316
+    },
+    {
+      "t": 761.883171554,
+      "unlock": true
+    },
+    {
+      "t": 766.028193453,
+      "lock": "PERSON_DETECTED",
+      "person_height": 468
+    }
+  ],
+  "video_check": {
+    "frames": 2980,
+    "fps": 15.0,
+    "seconds": 198.67
+  }
+}

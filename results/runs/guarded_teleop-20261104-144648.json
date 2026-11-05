@@ -1,0 +1,14 @@
+{
+  "program": "guarded_teleop",
+  "dry": false,
+  "person_stop_mode": "any_detected_person",
+  "person_min_score": 0.5,
+  "distance_measured": false,
+  "video": "results/videos/guarded_teleop-20261104-144648.mp4",
+  "reason": "ERROR",
+  "error": "카메라/YOLO 준비 실패: 카메라를 열지 못했습니다. 다른 프로그램이 쓰고 있지 않은지 확인하세요 (fuser -v /dev/video0). 없으면 USB 선을 확인하세요.",
+  "stop_errors": [],
+  "stop_errors_final": [],
+  "vision_error": "카메라를 열지 못했습니다. 다른 프로그램이 쓰고 있지 않은지 확인하세요 (fuser -v /dev/video0). 없으면 USB 선을 확인하세요.",
+  "events": []
+}

@@ -1,0 +1,55 @@
+{
+  "date": "2026-11-04",
+  "motors_accessed": false,
+  "cause": "existing guarded_teleop.py --dry PID 3276 held camera",
+  "old_dry_process_stopped": true,
+  "camera_open": true,
+  "frame_size": [
+    640,
+    480
+  ],
+  "inference_seconds": 0.073,
+  "detections": [
+    [
+      "tv",
+      0.8317410349845886,
+      [
+        206,
+        181,
+        191,
+        120
+      ]
+    ],
+    [
+      "chair",
+      0.6248072385787964,
+      [
+        408,
+        226,
+        137,
+        231
+      ]
+    ],
+    [
+      "chair",
+      0.41828832030296326,
+      [
+        521,
+        192,
+        113,
+        261
+      ]
+    ],
+    [
+      "tv",
+      0.4160902500152588,
+      [
+        235,
+        353,
+        135,
+        97
+      ]
+    ]
+  ],
+  "image": "results/guarded-camera-recheck-20261104.jpg"
+}
